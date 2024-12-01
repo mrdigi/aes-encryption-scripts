@@ -1,10 +1,11 @@
 #!/bin/env python3
 from datetime import datetime
+import time
 import argparse
 import getpass
 import hashlib
 
-def main(size, rounds, passkey, inject_marker="", verbose=False):
+def main(size, rounds, passkey, delay=0, inject_marker="", verbose=False):
     last_feed = "g0blins!"
     r, injections = 0, 0
     user = getpass.getuser()
@@ -24,9 +25,10 @@ def main(size, rounds, passkey, inject_marker="", verbose=False):
             feed = f"{feed}:{user}:{last_feed}"
             injections += 1
         last_feed = feed
+        time.sleep(delay*0.001)
         sha256_hash.update(feed.encode())
         if verbose:
-            print(f"Round {round}: {sha256_hash.hexdigest()}")
+            print(f"Round {r}: {sha256_hash.hexdigest()}")
         r += 1
 
     # Get key size in bytes
@@ -47,6 +49,8 @@ if __name__ == "__main__":
     parser.add_argument(
             '-r', '--rounds', default=1024, type=int, help="How many rounds of hashing")
     parser.add_argument(
+            '-d', '--delay', default=0, type=int, help="Delay in ms before each hash")
+    parser.add_argument(
             '-v', '--verbose',action="store_true")
     parser.add_argument(
             '-i', '--inject_marker',type=str, default="ae", help="Injects additional information into hash")
@@ -58,6 +62,7 @@ if __name__ == "__main__":
             args.size, 
             args.rounds, 
             passkey, 
+            delay=args.delay,
             inject_marker=args.inject_marker, 
             verbose=args.verbose)    
 
