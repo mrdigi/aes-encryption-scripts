@@ -1,5 +1,7 @@
 #!/bin/env python3
 from datetime import datetime
+from scipy.stats import entropy
+import numpy as np
 import re
 import sys
 import time
@@ -7,7 +9,33 @@ import argparse
 import getpass
 import hashlib
 
-def username_mangle(username):
+
+def gauge_entropy(random_bytes):
+    byte_values = np.frombuffer(random_bytes, dtype=np.uint8)
+    histogram = np.bincount(byte_values, minlength=32)
+    ent = entropy(histogram, base=2)
+    print(f"Entropy: {ent}")
+
+
+def shuffle_bytes(inbytes, num, rounds):
+    outbytes = list(inbytes)
+    for a,b in zip(range(0,16,2), range(31,16,-2)):
+        outbytes[a] = inbytes[b]
+        outbytes[b] = inbytes[a]
+
+    for i in range(1, 32, num+1): 
+        byte = outbytes[i]
+        if byte >= 189:
+            outbytes[i] = (byte + (rounds * num)) % 255
+        else:
+            outbytes[i] = (outbytes[i] + rounds)  % 255
+
+    if num < rounds:
+        outbytes = shuffle_bytes(outbytes, num+1, rounds)
+    return outbytes 
+
+
+def username_mangle(username, last_feed):
     # This step remains optional, but in certain environments it may be deligient to hide
     # username information when including it into a hash.
 
@@ -18,13 +46,11 @@ def username_mangle(username):
         username = bytes(username[0:32].encode())
     
     # Shuffle bytes 
-    shuffled_username = list(username)
-    for a,b in zip(range(0,16,2), range(31,15,-2)):
-        shuffled_username[a] = username[b]
-        shuffled_username[b] = username[a]
+    outbytes = shuffle_bytes(username, 0, 32)
 
     # Xor chunks
-    return bytes([a ^ b for a,b in zip(shuffled_username[0:16], shuffled_username[16:32])]).hex()
+    return bytes([a ^ b for a,b in zip(outbytes, last_feed)]).hex()
+
 
 def main(size, rounds, passkey, delay=0, inject_marker="", last_feed="", verbose=False):
     summary = {}
@@ -37,8 +63,8 @@ def main(size, rounds, passkey, delay=0, inject_marker="", last_feed="", verbose
     if not last_feed:
         last_feed = "fd4a1d671c60d418cc1cf43e25f42f12d87b78003e00e39a466b696f74cce6f5".encode('utf-8')
 
-    user = username_mangle(getpass.getuser())
-    user_hash = hashlib.sha256(user.encode('utf-8')).digest()
+    user_bytes = username_mangle(getpass.getuser(), last_feed)
+    user_hash = hashlib.sha256(user_bytes.encode('utf-8')).digest()
     passkey_hash = hashlib.sha256(passkey.encode('utf-8')).digest()
 
     # XOR initial hashes
