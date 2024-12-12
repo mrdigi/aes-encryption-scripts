@@ -16,6 +16,11 @@ def gauge_entropy(random_bytes):
     ent = entropy(histogram, base=2)
     print(f"Entropy: {ent}")
 
+def delay_round(delay):
+    start_time = datetime.now().timestamp()
+    while (datetime.now().timestamp() - start_time) < delay:
+        pass
+
 
 def shuffle_bytes(inbytes, num, rounds):
     outbytes = list(inbytes)
@@ -92,7 +97,7 @@ def main(size, rounds, passkey, delay=0, inject_marker="", last_feed="", verbose
             print(f"Round {r}: {sha256_hash.hexdigest()}")
 
         # If delay was given we wait here
-        time.sleep(delay*0.001)
+        delay_round(delay*0.001)
         r += 1
 
     # Get key size in bytes
@@ -130,7 +135,7 @@ if __name__ == "__main__":
         number = args.rounds.split('m')[0]
         rounds = int(number)*10**6
     else:
-        rounds = int(number)
+        rounds = int(args.rounds)
 
     passkey = getpass.getpass("Enter passkey: ")
     passkey2 = getpass.getpass("Re-enter passkey: ")
