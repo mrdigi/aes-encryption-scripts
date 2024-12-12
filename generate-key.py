@@ -97,7 +97,8 @@ def main(size, rounds, passkey, delay=0, inject_marker="", last_feed="", verbose
             print(f"Round {r}: {sha256_hash.hexdigest()}")
 
         # If delay was given we wait here
-        delay_round(delay*0.001)
+        if delay > 0:
+            delay_round(delay*0.001)
         r += 1
 
     # Get key size in bytes
