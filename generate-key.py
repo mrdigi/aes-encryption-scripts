@@ -57,7 +57,7 @@ def username_mangle(username, last_feed):
     return bytes([a ^ b for a,b in zip(outbytes, last_feed)]).hex()
 
 
-def main(size, rounds, passkey, delay=0, inject_marker="", last_feed="", verbose=False):
+def main(size, rounds, passkey, delay=0, inject_marker="", last_feed="", quiet=False, verbose=False):
     summary = {}
     r, injections = 0, 0
     sha256_hash = hashlib.sha256()
@@ -109,7 +109,9 @@ def main(size, rounds, passkey, delay=0, inject_marker="", last_feed="", verbose
     summary['injection_marker'] = inject_marker
     summary['injections'] = injections 
     summary['elapsed_time'] = f"{round(elapsed_time*1000,3)} millseconds"
-    print(summary)
+
+    if not quiet:
+        print(summary)
     return sha256_hash.hexdigest()[0:key_size]
 
 if __name__ == "__main__":
@@ -121,6 +123,8 @@ if __name__ == "__main__":
             '-r', '--rounds', default="2k", type=str, help="How many rounds of hashing")
     parser.add_argument(
             '-d', '--delay', default=0, type=int, help="Delay in ms before each hash")
+    parser.add_argument(
+            '-q', '--quiet',action="store_true", default=False)
     parser.add_argument(
             '-v', '--verbose',action="store_true")
     parser.add_argument(
@@ -151,6 +155,10 @@ if __name__ == "__main__":
             passkey, 
             delay=args.delay,
             inject_marker=args.inject_marker, 
+            quiet=args.quiet,
             verbose=args.verbose)    
 
-    print(f"Generated key: {key_hash}")
+    if args.quiet:
+        print(key_hash)
+    else:
+        print(f"Generated key: {key_hash}")
