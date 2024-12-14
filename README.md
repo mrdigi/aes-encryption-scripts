@@ -2,7 +2,9 @@
 A set of scripts that allow encrypting and decrypting data in AES modes ecb, cbc, and ctr.
 
 # generate-key.py
-This is an exerimental script to generate a key based on a password, much like pbkdf/2.  Instead of a salt I use the username of the person running the script.  I added the idea of injection markers, an injection marker is just a pattern that matches the hash in a current round, when matched this will add the initial hash with the username, along with the previous hash from last round.  For Example:
+This is an exerimental script to generate a key based on a password, much like pbkdf/2.  Instead of a salt I use the username of the person running the script, and I added the idea of injection markers. 
+
+An injection marker is just a pattern that matches the hash in a current round, when matched this will add the initial hash with the username, along with the previous hash from last round.  For Example:
 
 ```generate-key.py -s 128 -r 500k -i aef```
 
