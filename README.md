@@ -1,7 +1,7 @@
-# aes-encryption-scripts
+# AES-encryption-scripts
 A set of scripts that allow encrypting and decrypting data in AES modes ecb, cbc, and ctr.
 
-# generate-key.py
+## generate-key.py
 This is an exerimental script to generate a key based on a password, much like pbkdf/2.  Instead of a salt I use the username of the person running the script, and I added the idea of injection markers. 
 
 An injection marker is just a pattern that matches the hash in a current round, when matched this will add the initial hash with the username, along with the previous hash from last round.  For Example:
@@ -12,10 +12,10 @@ The above will return a 128-bit key after a 500,000 rounds of hashing.  During t
 
 **note**:  While this script in practice should be fairly secure, it's just experimental and don't recommend it being used for anything important.
 
-# aes-encrypt.py
+## aes-encrypt.py
 A script that supports AES encryption with modes ECB, CBC, and CTR.  
 
-## General:
+### General:
 aes-encrypt.py needs at the very least a key, one like generate-key.py can provide, but see the warning.  It takes it's input via stdin like so:
 
 ```echo "Hello World!" | aes-encrypt.py -k MY_AES_KEY```
@@ -32,6 +32,6 @@ with the '-f <filename>' argument.
 **Note**:  The IV or Nonce is currently choosen for you at random and printed in the summary.  There is currently no way to specify the IV or Nonce which are needed, so if you want to 
 decrypt later, pay close attentioned to the summary output.
 
-# aes-decrypt.py
+## aes-decrypt.py
 
 This is the inverse of the aes-encrypt.py script.  
